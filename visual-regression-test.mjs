@@ -11,6 +11,7 @@ const MIME = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.css': 'text/css',
+  '.ttf': 'font/ttf',
 };
 
 const PIXEL_THRESHOLD = 0.3;

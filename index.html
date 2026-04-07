@@ -124,7 +124,7 @@
     const QR_Y_IN_TRIM = (TRIM_H - CONTENT_HEIGHT) / 2;    // 3.5mm
     const QUIET_ZONE = QR_SIZE * 15 / 400;                  // 1.725mm
     const TEXT_X_IN_TRIM = QR_X_IN_TRIM + QUIET_ZONE;       // 23.725mm
-    const TEXT_Y_IN_TRIM = QR_Y_IN_TRIM + QR_SIZE - 0.5;    // 49mm
+    const TEXT_Y_IN_TRIM = QR_Y_IN_TRIM + QR_SIZE + 1;      // 50.5mm
     const DISPLAY_SCALE = 1.4;
 
     // Set CSS custom properties so preview matches PDF layout exactly
@@ -226,6 +226,21 @@
       document.querySelectorAll(".download-btn").forEach(btn => btn.disabled = false);
     }
 
+    // Load Fredoka font for PDF embedding (fetched once, cached)
+    let fredokaBase64 = null;
+    async function loadFredokaFont() {
+      if (fredokaBase64) return fredokaBase64;
+      const resp = await fetch("Fredoka-Regular.ttf");
+      const buffer = await resp.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i += 8192) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+      }
+      fredokaBase64 = btoa(binary);
+      return fredokaBase64;
+    }
+
     // PDF generation — uses the shared layout constants defined above
     async function generatePrintPDF(cardName) {
       const { jsPDF } = window.jspdf;
@@ -260,7 +275,11 @@
         height: QR_SIZE,
       });
 
-      doc.setFont("helvetica", "normal");
+      // Embed Fredoka font to match the on-screen preview
+      const fontData = await loadFredokaFont();
+      doc.addFileToVFS("Fredoka-Regular.ttf", fontData);
+      doc.addFont("Fredoka-Regular.ttf", "Fredoka", "normal");
+      doc.setFont("Fredoka", "normal");
       doc.setFontSize(4.5);
       doc.setTextColor(153, 153, 153);
       doc.text(card.url, BLEED + TEXT_X_IN_TRIM, BLEED + TEXT_Y_IN_TRIM);
