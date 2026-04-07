@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Codes</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #fafafa; color: #333; padding: 2rem; }
+    h1 { text-align: center; margin-bottom: 2rem; font-weight: 300; font-size: 1.8rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; max-width: 1400px; margin: 0 auto; }
+    .card { background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; }
+    .card h2 { font-size: 1rem; font-weight: 500; margin-bottom: 0.25rem; }
+    .card a { color: #666; font-size: 0.85rem; text-decoration: none; }
+    .card a:hover { text-decoration: underline; }
+    .variants { display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; }
+    .variant { flex: 1; max-width: 240px; }
+    .variant img { width: 100%; height: auto; border-radius: 4px; }
+    .variant .label { font-size: 0.75rem; color: #999; margin-top: 0.4rem; }
+    .variant a.dl { display: inline-block; margin-top: 0.3rem; font-size: 0.75rem; color: #0066cc; text-decoration: none; }
+    .variant a.dl:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>QR Codes</h1>
+  <div class="grid">
+    <div class="card">
+      <h2>Chess Party</h2>
+      <a href="https://www.chessreel.com/chessparty">chessreel.com/chessparty</a>
+      <div class="variants">
+        <div class="variant">
+          <img src="chessparty.png" alt="QR: chessreel.com/chessparty">
+          <div class="label">Standard</div>
+          <a class="dl" href="chessparty.png" download>Download</a>
+        </div>
+        <div class="variant">
+          <img src="chessparty-logo-space.png" alt="QR: chessreel.com/chessparty (logo space)">
+          <div class="label">Logo space</div>
+          <a class="dl" href="chessparty-logo-space.png" download>Download</a>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>ChessReel</h2>
+      <a href="https://www.chessreel.com">chessreel.com</a>
+      <div class="variants">
+        <div class="variant">
+          <img src="chessreel.png" alt="QR: chessreel.com">
+          <div class="label">Standard</div>
+          <a class="dl" href="chessreel.png" download>Download</a>
+        </div>
+        <div class="variant">
+          <img src="chessreel-logo-space.png" alt="QR: chessreel.com (logo space)">
+          <div class="label">Logo space</div>
+          <a class="dl" href="chessreel-logo-space.png" download>Download</a>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>William Bernting</h2>
+      <a href="https://william.bernting.se">william.bernting.se</a>
+      <div class="variants">
+        <div class="variant">
+          <img src="william.png" alt="QR: william.bernting.se">
+          <div class="label">Standard</div>
+          <a class="dl" href="william.png" download>Download</a>
+        </div>
+        <div class="variant">
+          <img src="william-logo-space.png" alt="QR: william.bernting.se (logo space)">
+          <div class="label">Logo space</div>
+          <a class="dl" href="william-logo-space.png" download>Download</a>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>KenDev</h2>
+      <a href="https://www.kendev.se">kendev.se</a>
+      <div class="variants">
+        <div class="variant">
+          <img src="kendev.png" alt="QR: kendev.se">
+          <div class="label">Standard</div>
+          <a class="dl" href="kendev.png" download>Download</a>
+        </div>
+        <div class="variant">
+          <img src="kendev-logo-space.png" alt="QR: kendev.se (logo space)">
+          <div class="label">Logo space</div>
+          <a class="dl" href="kendev-logo-space.png" download>Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
