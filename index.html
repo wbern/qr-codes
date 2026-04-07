@@ -3,136 +3,283 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Codes</title>
+  <title>Business Cards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #fafafa; color: #333; padding: 2rem; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f0f0; color: #333; padding: 2rem; }
     h1 { text-align: center; margin-bottom: 2rem; font-weight: 300; font-size: 1.8rem; }
-    .site { max-width: 500px; margin: 0 auto 3rem; }
-    .site h2 { text-align: center; font-size: 1.1rem; font-weight: 500; margin-bottom: 0.25rem; }
-    .site .url { display: block; text-align: center; color: #666; font-size: 0.85rem; text-decoration: none; margin-bottom: 1rem; }
-    .site .url:hover { text-decoration: underline; }
-    .tabs { display: flex; justify-content: center; gap: 0.25rem; margin-bottom: 1rem; }
-    .tab { padding: 0.4rem 1rem; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 0.8rem; color: #555; transition: all 0.15s; }
-    .tab:first-child { border-radius: 6px 0 0 6px; }
-    .tab:last-child { border-radius: 0 6px 6px 0; }
-    .tab.active { background: #333; color: #fff; border-color: #333; }
-    .tab:hover:not(.active) { border-color: #aaa; }
-    .qr-display { text-align: center; }
-    .qr-display img { max-width: 300px; width: 100%; height: auto; }
-    .qr-display a.dl { display: inline-block; margin-top: 0.5rem; font-size: 0.8rem; color: #0066cc; text-decoration: none; }
-    .qr-display a.dl:hover { text-decoration: underline; }
-    .qr-display[hidden] { display: none; }
-    hr { border: none; border-top: 1px solid #eee; max-width: 500px; margin: 0 auto 3rem; }
+
+    .card {
+      width: var(--card-w);
+      height: var(--card-h);
+      background: #fff;
+      margin: 0 auto 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-label {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 0.5rem;
+      max-width: var(--card-w);
+    }
+
+    .qr-container {
+      position: absolute;
+      width: var(--qr-size);
+      height: var(--qr-size);
+      top: var(--qr-top);
+      left: var(--qr-left);
+    }
+
+    .qr-container svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      shape-rendering: crispEdges;
+    }
+
+    .card-url {
+      position: absolute;
+      top: var(--text-top);
+      left: var(--text-left);
+      font-family: "Fredoka", sans-serif;
+      font-weight: 400;
+      font-size: var(--text-size);
+      color: #999;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+
+    .download-btn {
+      display: block;
+      margin: 0.5rem auto 2rem;
+      padding: 0.5rem 1.2rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: #555;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .download-btn:hover:not(:disabled) {
+      background: #333;
+      color: #fff;
+    }
+    .download-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    @media print {
+      body { background: none; padding: 0; }
+      h1, .card-label, .download-btn { display: none; }
+      .card {
+        box-shadow: none;
+        border: 0.5pt solid #ccc;
+        page-break-inside: avoid;
+        margin: 10mm auto;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>QR Codes</h1>
+  <h1>Business Cards</h1>
 
-  <div class="site" data-site="chessparty">
-    <h2>Chess Party</h2>
-    <a class="url" href="https://www.chessreel.com/chessparty">chessreel.com/chessparty</a>
-    <div class="tabs">
-      <div class="tab active" data-variant="standard">Standard</div>
-      <div class="tab" data-variant="diamond">Diamond</div>
-      <div class="tab" data-variant="square">Square</div>
-    </div>
-    <div class="qr-display" data-variant="standard">
-      <img src="chessparty.png" alt="QR: chessreel.com/chessparty">
-      <br><a class="dl" href="chessparty.png" download>Download</a>
-    </div>
-    <div class="qr-display" data-variant="diamond" hidden>
-      <img src="chessparty-logo-diamond.png" alt="QR: chessreel.com/chessparty (diamond)">
-      <br><a class="dl" href="chessparty-logo-diamond.png" download>Download</a>
-    </div>
-    <div class="qr-display" data-variant="square" hidden>
-      <img src="chessparty-logo-square.png" alt="QR: chessreel.com/chessparty (square)">
-      <br><a class="dl" href="chessparty-logo-square.png" download>Download</a>
-    </div>
+  <div class="card-label">ChessReel</div>
+  <div class="card">
+    <div class="qr-container" id="qr-chessreel"></div>
+    <span class="card-url">https://www.chessreel.com</span>
   </div>
+  <button class="download-btn" id="btn-chessreel" disabled>Download Print PDF</button>
 
-  <hr>
-
-  <div class="site" data-site="chessreel">
-    <h2>ChessReel</h2>
-    <a class="url" href="https://www.chessreel.com">chessreel.com</a>
-    <div class="tabs">
-      <div class="tab active" data-variant="standard">Standard</div>
-      <div class="tab" data-variant="diamond">Diamond</div>
-      <div class="tab" data-variant="square">Square</div>
-    </div>
-    <div class="qr-display" data-variant="standard">
-      <img src="chessreel.png" alt="QR: chessreel.com">
-      <br><a class="dl" href="chessreel.png" download>Download</a>
-    </div>
-    <div class="qr-display" data-variant="diamond" hidden>
-      <img src="chessreel-logo-diamond.png" alt="QR: chessreel.com (diamond)">
-      <br><a class="dl" href="chessreel-logo-diamond.png" download>Download</a>
-    </div>
-    <div class="qr-display" data-variant="square" hidden>
-      <img src="chessreel-logo-square.png" alt="QR: chessreel.com (square)">
-      <br><a class="dl" href="chessreel-logo-square.png" download>Download</a>
-    </div>
+  <div class="card-label">Chess Party</div>
+  <div class="card">
+    <div class="qr-container" id="qr-chessparty"></div>
+    <span class="card-url">https://www.chessreel.com/chessparty</span>
   </div>
+  <button class="download-btn" id="btn-chessparty" disabled>Download Print PDF</button>
 
-  <hr>
-
-  <div class="site" data-site="william">
-    <h2>William Bernting</h2>
-    <a class="url" href="https://william.bernting.se">william.bernting.se</a>
-    <div class="tabs">
-      <div class="tab active" data-variant="standard">Standard</div>
-      <div class="tab" data-variant="diamond">Diamond</div>
-      <div class="tab" data-variant="square">Square</div>
-    </div>
-    <div class="qr-display" data-variant="standard">
-      <img src="william.png" alt="QR: william.bernting.se">
-      <br><a class="dl" href="william.png" download>Download</a>
-    </div>
-    <div class="qr-display" data-variant="diamond" hidden>
-      <img src="william-logo-diamond.png" alt="QR: william.bernting.se (diamond)">
-      <br><a class="dl" href="william-logo-diamond.png" download>Download</a>
-    </div>
-    <div class="qr-display" data-variant="square" hidden>
-      <img src="william-logo-square.png" alt="QR: william.bernting.se (square)">
-      <br><a class="dl" href="william-logo-square.png" download>Download</a>
-    </div>
-  </div>
-
-  <hr>
-
-  <div class="site" data-site="kendev">
-    <h2>KenDev</h2>
-    <a class="url" href="https://www.kendev.se">kendev.se</a>
-    <div class="tabs">
-      <div class="tab active" data-variant="standard">Standard</div>
-      <div class="tab" data-variant="diamond">Diamond</div>
-      <div class="tab" data-variant="square">Square</div>
-    </div>
-    <div class="qr-display" data-variant="standard">
-      <img src="kendev.png" alt="QR: kendev.se">
-      <br><a class="dl" href="kendev.png" download>Download</a>
-    </div>
-    <div class="qr-display" data-variant="diamond" hidden>
-      <img src="kendev-logo-diamond.png" alt="QR: kendev.se (diamond)">
-      <br><a class="dl" href="kendev-logo-diamond.png" download>Download</a>
-    </div>
-    <div class="qr-display" data-variant="square" hidden>
-      <img src="kendev-logo-square.png" alt="QR: kendev.se (square)">
-      <br><a class="dl" href="kendev-logo-square.png" download>Download</a>
-    </div>
-  </div>
-
+  <script src="node_modules/qr-code-styling/lib/qr-code-styling.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.3.0/dist/svg2pdf.umd.min.js"></script>
   <script>
-    document.querySelectorAll('.site').forEach(site => {
-      site.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          site.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-          site.querySelectorAll('.qr-display').forEach(d => d.hidden = true);
-          tab.classList.add('active');
-          site.querySelector(`.qr-display[data-variant="${tab.dataset.variant}"]`).hidden = false;
-        });
+    // Shared layout constants (mm) — single source of truth for both preview and PDF
+    const TRIM_W = 90, TRIM_H = 55;
+    const BLEED = 3;
+    const PAGE_W = TRIM_W + 2 * BLEED;   // 96mm
+    const PAGE_H = TRIM_H + 2 * BLEED;   // 61mm
+    const QR_SIZE = 46;
+    const URL_TEXT_HEIGHT = 2;
+    const CONTENT_HEIGHT = QR_SIZE + URL_TEXT_HEIGHT;
+    const QR_X_IN_TRIM = (TRIM_W - QR_SIZE) / 2;           // 22mm
+    const QR_Y_IN_TRIM = (TRIM_H - CONTENT_HEIGHT) / 2;    // 3.5mm
+    const QUIET_ZONE = QR_SIZE * 15 / 400;                  // 1.725mm
+    const TEXT_X_IN_TRIM = QR_X_IN_TRIM + QUIET_ZONE;       // 23.725mm
+    const TEXT_Y_IN_TRIM = QR_Y_IN_TRIM + QR_SIZE - 0.5;    // 49mm
+    const DISPLAY_SCALE = 1.4;
+
+    // Set CSS custom properties so preview matches PDF layout exactly
+    const r = document.documentElement.style;
+    r.setProperty('--card-w', `${TRIM_W * DISPLAY_SCALE}mm`);
+    r.setProperty('--card-h', `${TRIM_H * DISPLAY_SCALE}mm`);
+    r.setProperty('--qr-size', `${QR_SIZE * DISPLAY_SCALE}mm`);
+    r.setProperty('--qr-top', `${QR_Y_IN_TRIM * DISPLAY_SCALE}mm`);
+    r.setProperty('--qr-left', `${QR_X_IN_TRIM * DISPLAY_SCALE}mm`);
+    r.setProperty('--text-top', `${TEXT_Y_IN_TRIM * DISPLAY_SCALE}mm`);
+    r.setProperty('--text-left', `${TEXT_X_IN_TRIM * DISPLAY_SCALE}mm`);
+    r.setProperty('--text-size', `${(4.5 * 0.3528) * DISPLAY_SCALE}mm`);
+
+    const cards = [
+      { id: "qr-chessreel", url: "https://www.chessreel.com", name: "chessreel" },
+      { id: "qr-chessparty", url: "https://www.chessreel.com/chessparty", name: "chessparty" },
+    ];
+
+    let readyCount = 0;
+
+    cards.forEach(({ id, url, name }) => {
+      const qr = new QRCodeStyling({
+        width: 400,
+        height: 400,
+        type: "svg",
+        data: url,
+        margin: 0,
+        qrOptions: {
+          typeNumber: 5,
+          errorCorrectionLevel: "H",
+        },
+        dotsOptions: {
+          color: "#000",
+          type: "square",
+        },
+        cornersSquareOptions: {
+          type: "square",
+          color: "#000",
+        },
+        cornersDotOptions: {
+          type: "square",
+          color: "#000",
+        },
+        backgroundOptions: {
+          color: "#ffffff",
+        },
+        image: "chessreel-logo.svg",
+        imageOptions: {
+          hideBackgroundDots: true,
+          imageSize: 0.4,
+          margin: 4,
+        },
       });
+      const container = document.getElementById(id);
+      qr.append(container);
+
+      // Add white background rect behind the logo image
+      function addLogoBackground(svg) {
+        const imageEl = svg.querySelector("image");
+        if (!imageEl) return;
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", imageEl.getAttribute("x"));
+        rect.setAttribute("y", imageEl.getAttribute("y"));
+        rect.setAttribute("width", imageEl.getAttribute("width"));
+        rect.setAttribute("height", imageEl.getAttribute("height"));
+        rect.setAttribute("fill", "#ffffff");
+        imageEl.parentNode.insertBefore(rect, imageEl);
+      }
+
+      // qr-code-styling renders async — poll until the image element appears
+      const check = setInterval(() => {
+        const svg = container.querySelector("svg");
+        if (!svg) return;
+        const imageEl = svg.querySelector("image");
+        if (!imageEl || !imageEl.getAttribute("x")) return;
+        clearInterval(check);
+        addLogoBackground(svg);
+        readyCount++;
+        if (readyCount === cards.length) onAllQRReady();
+      }, 50);
+    });
+
+    // Convert external logo <image> hrefs to inline base64 data URLs
+    async function inlineLogoImages() {
+      const images = document.querySelectorAll(".qr-container svg image");
+      for (const img of images) {
+        const href = img.getAttribute("href") || img.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+        if (!href || href.startsWith("data:")) continue;
+        const resp = await fetch(href);
+        const text = await resp.text();
+        const dataUrl = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(text)));
+        img.setAttribute("href", dataUrl);
+        img.removeAttributeNS("http://www.w3.org/1999/xlink", "href");
+      }
+    }
+
+    async function onAllQRReady() {
+      await inlineLogoImages();
+      document.querySelectorAll(".download-btn").forEach(btn => btn.disabled = false);
+    }
+
+    // PDF generation — uses the shared layout constants defined above
+    async function generatePrintPDF(cardName) {
+      const { jsPDF } = window.jspdf;
+      const card = cards.find(c => c.name === cardName);
+      const container = document.getElementById(card.id);
+      const svgEl = container.querySelector("svg");
+
+      // Clone SVG and strip pixel dimensions so svg2pdf uses viewBox + our size options
+      const svgClone = svgEl.cloneNode(true);
+      svgClone.removeAttribute("width");
+      svgClone.removeAttribute("height");
+
+      const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: [PAGE_W, PAGE_H],
+      });
+
+      // White background covering full page (extends into bleed)
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, PAGE_W, PAGE_H, "F");
+
+      const qrX = BLEED + QR_X_IN_TRIM;
+      const qrY = BLEED + QR_Y_IN_TRIM;
+
+      // Render SVG as vector into PDF
+      const { svg2pdf } = window.svg2pdf;
+      await svg2pdf(svgClone, doc, {
+        x: qrX,
+        y: qrY,
+        width: QR_SIZE,
+        height: QR_SIZE,
+      });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(4.5);
+      doc.setTextColor(153, 153, 153);
+      doc.text(card.url, BLEED + TEXT_X_IN_TRIM, BLEED + TEXT_Y_IN_TRIM);
+
+      doc.save(`${cardName}-business-card.pdf`);
+    }
+
+    // Button click handlers
+    document.getElementById("btn-chessreel").addEventListener("click", async function () {
+      this.disabled = true;
+      this.textContent = "Generating…";
+      try { await generatePrintPDF("chessreel"); }
+      finally { this.disabled = false; this.textContent = "Download Print PDF"; }
+    });
+    document.getElementById("btn-chessparty").addEventListener("click", async function () {
+      this.disabled = true;
+      this.textContent = "Generating…";
+      try { await generatePrintPDF("chessparty"); }
+      finally { this.disabled = false; this.textContent = "Download Print PDF"; }
     });
   </script>
 </body>

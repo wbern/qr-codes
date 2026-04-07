@@ -1,0 +1,31 @@
+{
+  "name": "qr-codes",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx serve .",
+    "screenshot": "node screenshot.mjs",
+    "test:visual": "node visual-regression-test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wbern/qr-codes.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/wbern/qr-codes/issues"
+  },
+  "homepage": "https://github.com/wbern/qr-codes#readme",
+  "dependencies": {
+    "playwright": "^1.59.1",
+    "qr-code-styling": "^1.9.2"
+  },
+  "devDependencies": {
+    "pixelmatch": "^7.1.0",
+    "pngjs": "^7.0.0"
+  }
+}
