@@ -1,0 +1,4 @@
+qr-cards
+output/*-pdf-1.png
+output/*-extracted-*.png
+output/*-diff.png
