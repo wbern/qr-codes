@@ -35,7 +35,7 @@ const port = server.address().port;
 
 const browser = await chromium.launch();
 const page = await browser.newPage({
-  viewport: { width: 800, height: 900 },
+  viewport: { width: 800, height: 1800 },
   deviceScaleFactor: 2,
 });
 await page.goto(`http://localhost:${port}/`);
@@ -48,7 +48,7 @@ await page.waitForFunction(() =>
   { timeout: 10000 }
 );
 
-const cardNames = ['chessreel', 'chessparty'];
+const cardNames = ['chessreel', 'chessparty', 'chessreel-dark', 'chessparty-dark'];
 let failures = 0;
 
 for (const name of cardNames) {
@@ -71,7 +71,8 @@ for (const name of cardNames) {
   const targetWidth = htmlPng.width;
   const targetHeight = htmlPng.height;
 
-  const pdfDataUrl = await page.evaluate(async ({ pdfBase64, targetWidth, targetHeight }) => {
+  const isDark = name.endsWith('-dark');
+  const pdfDataUrl = await page.evaluate(async ({ pdfBase64, targetWidth, targetHeight, isDark }) => {
     // Load pdf.js from CDN
     if (!window.pdfjsLib) {
       await new Promise((resolve, reject) => {
@@ -125,6 +126,7 @@ for (const name of cardNames) {
     pdfBase64: pdfBytes.toString('base64'),
     targetWidth,
     targetHeight,
+    isDark,
   });
 
   // 4. Decode PDF PNG

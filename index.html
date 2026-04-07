@@ -79,6 +79,13 @@
       cursor: not-allowed;
     }
 
+    .card-dark {
+      background: #0d0a1f;
+    }
+    .card-dark .card-url {
+      color: rgba(255,255,255,0.5);
+    }
+
     @media print {
       body { background: none; padding: 0; }
       h1, .card-label, .download-btn { display: none; }
@@ -100,6 +107,11 @@
     <span class="card-url">https://www.chessreel.com</span>
   </div>
   <button class="download-btn" id="btn-chessreel" disabled>Download Print PDF</button>
+  <div class="card card-dark">
+    <div class="qr-container" id="qr-chessreel-dark"></div>
+    <span class="card-url">https://www.chessreel.com</span>
+  </div>
+  <button class="download-btn" id="btn-chessreel-dark" disabled>Download Dark PDF</button>
 
   <div class="card-label">Chess Party</div>
   <div class="card">
@@ -107,6 +119,11 @@
     <span class="card-url">https://www.chessreel.com/chessparty</span>
   </div>
   <button class="download-btn" id="btn-chessparty" disabled>Download Print PDF</button>
+  <div class="card card-dark">
+    <div class="qr-container" id="qr-chessparty-dark"></div>
+    <span class="card-url">https://www.chessreel.com/chessparty</span>
+  </div>
+  <button class="download-btn" id="btn-chessparty-dark" disabled>Download Dark PDF</button>
 
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
@@ -137,15 +154,18 @@
     r.setProperty('--text-top', `${TEXT_Y_IN_TRIM * DISPLAY_SCALE}mm`);
     r.setProperty('--text-left', `${TEXT_X_IN_TRIM * DISPLAY_SCALE}mm`);
     r.setProperty('--text-size', `${(4.5 * 0.3528) * DISPLAY_SCALE}mm`);
-
     const cards = [
-      { id: "qr-chessreel", url: "https://www.chessreel.com", name: "chessreel" },
-      { id: "qr-chessparty", url: "https://www.chessreel.com/chessparty", name: "chessparty" },
+      { id: "qr-chessreel", url: "https://www.chessreel.com", name: "chessreel", dark: false },
+      { id: "qr-chessparty", url: "https://www.chessreel.com/chessparty", name: "chessparty", dark: false },
+      { id: "qr-chessreel-dark", url: "https://www.chessreel.com", name: "chessreel-dark", dark: true },
+      { id: "qr-chessparty-dark", url: "https://www.chessreel.com/chessparty", name: "chessparty-dark", dark: true },
     ];
 
     let readyCount = 0;
 
-    cards.forEach(({ id, url, name }) => {
+    cards.forEach(({ id, url, name, dark }) => {
+      const dotColor = dark ? "#ffffff" : "#000";
+      const bgColor = dark ? "transparent" : "#ffffff";
       const qr = new QRCodeStyling({
         width: 400,
         height: 400,
@@ -157,19 +177,19 @@
           errorCorrectionLevel: "H",
         },
         dotsOptions: {
-          color: "#000",
+          color: dotColor,
           type: "square",
         },
         cornersSquareOptions: {
           type: "square",
-          color: "#000",
+          color: dotColor,
         },
         cornersDotOptions: {
           type: "square",
-          color: "#000",
+          color: dotColor,
         },
         backgroundOptions: {
-          color: "#ffffff",
+          color: bgColor,
         },
         image: "chessreel-logo.svg",
         imageOptions: {
@@ -181,8 +201,10 @@
       const container = document.getElementById(id);
       qr.append(container);
 
-      // Add white background rect behind the logo image
+      // Add background rect behind the logo image (light cards only —
+      // dark cards let the checkerboard show through)
       function addLogoBackground(svg) {
+        if (dark) return;
         const imageEl = svg.querySelector("image");
         if (!imageEl) return;
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -207,14 +229,31 @@
       }, 50);
     });
 
-    // Convert external logo <image> hrefs to inline base64 data URLs
+    // Convert external logo <image> hrefs to inline base64 data URLs,
+    // and strip white background rects from dark-card logos.
     async function inlineLogoImages() {
       const images = document.querySelectorAll(".qr-container svg image");
       for (const img of images) {
         const href = img.getAttribute("href") || img.getAttributeNS("http://www.w3.org/1999/xlink", "href");
-        if (!href || href.startsWith("data:")) continue;
-        const resp = await fetch(href);
-        const text = await resp.text();
+        if (!href) continue;
+        const isDarkCard = img.closest(".card-dark") !== null;
+
+        let text;
+        if (href.startsWith("data:image/svg+xml;base64,")) {
+          // QRCodeStyling already inlined it — decode to get SVG text
+          text = decodeURIComponent(escape(atob(href.split(",")[1])));
+        } else if (!href.startsWith("data:")) {
+          // External URL — fetch it
+          const resp = await fetch(href);
+          text = await resp.text();
+        } else {
+          continue; // non-SVG data URL, skip
+        }
+
+        if (isDarkCard) {
+          text = text.replace(/<rect[^>]*width="1800"[^>]*fill="#ffffff"[^>]*\/>/g, "");
+        }
+
         const dataUrl = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(text)));
         img.setAttribute("href", dataUrl);
         img.removeAttributeNS("http://www.w3.org/1999/xlink", "href");
@@ -223,6 +262,12 @@
 
     async function onAllQRReady() {
       await inlineLogoImages();
+      // Apply canvas-rendered background to dark cards — same image used for PDF,
+      // so preview and PDF are pixel-identical for the background layer.
+      const darkBg = generateDarkBackground();
+      document.querySelectorAll(".card-dark").forEach(card => {
+        card.style.background = `url(${darkBg}) center/100% 100% no-repeat`;
+      });
       document.querySelectorAll(".download-btn").forEach(btn => btn.disabled = false);
     }
 
@@ -241,6 +286,71 @@
       return fredokaBase64;
     }
 
+    // Dark card background — rendered once on a canvas, shared by preview and PDF
+    const DARK_BASE = "#0d0a1f";
+    const DARK_SQUARE = "#16122e";
+    const DARK_BG_PX_PER_MM = 20;  // 508 DPI — sharp enough for print
+
+    let darkBgDataUrl = null;
+    function generateDarkBackground() {
+      if (darkBgDataUrl) return darkBgDataUrl;
+      const w = TRIM_W * DARK_BG_PX_PER_MM;
+      const h = TRIM_H * DARK_BG_PX_PER_MM;
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+
+      // 1. Fill base color
+      ctx.fillStyle = DARK_BASE;
+      ctx.fillRect(0, 0, w, h);
+
+      // 2. Draw checkerboard — 8 squares across trim width
+      const sqPx = (TRIM_W / 8) * DARK_BG_PX_PER_MM;
+      ctx.fillStyle = DARK_SQUARE;
+      const cols = Math.ceil(w / sqPx);
+      const rows = Math.ceil(h / sqPx);
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if ((r + c) % 2 === 0) {
+            ctx.fillRect(c * sqPx, r * sqPx, sqPx, sqPx);
+          }
+        }
+      }
+
+      // 3. Radial gradient overlay — subtle lightening at center
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = Math.max(w, h) * 0.7;
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      grad.addColorStop(0, "rgba(30, 20, 70, 0.35)");
+      grad.addColorStop(1, "transparent");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      darkBgDataUrl = canvas.toDataURL("image/png");
+      return darkBgDataUrl;
+    }
+
+    // Rasterise an SVG data-URL to a transparent PNG data-URL at the given size.
+    // svg2pdf can't composite an embedded SVG image with transparency, but it
+    // handles PNG alpha just fine.
+    function svgDataUrlToPngDataUrl(svgDataUrl, size) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement("canvas");
+          c.width = size;
+          c.height = size;
+          const ctx = c.getContext("2d");
+          // No fill — canvas defaults to transparent
+          ctx.drawImage(img, 0, 0, size, size);
+          resolve(c.toDataURL("image/png"));
+        };
+        img.src = svgDataUrl;
+      });
+    }
+
     // PDF generation — uses the shared layout constants defined above
     async function generatePrintPDF(cardName) {
       const { jsPDF } = window.jspdf;
@@ -253,15 +363,49 @@
       svgClone.removeAttribute("width");
       svgClone.removeAttribute("height");
 
+      // For dark cards: remove logo <image> and transparent bg rect from the
+      // SVG clone so svg2pdf renders only the QR dots. We'll add the logo
+      // separately via doc.addImage() which handles PNG alpha correctly.
+      let darkLogoInfo = null;
+      if (card.dark) {
+        const bgRect = svgClone.querySelector("rect");
+        if (bgRect && bgRect.getAttribute("fill") === "transparent") {
+          bgRect.remove();
+        }
+        const logoImg = svgClone.querySelector("image");
+        if (logoImg) {
+          const logoHref = logoImg.getAttribute("href");
+          // Save position info (in SVG viewBox coords, 0-400) before removing
+          const x = parseFloat(logoImg.getAttribute("x"));
+          const y = parseFloat(logoImg.getAttribute("y"));
+          const w = parseFloat(logoImg.getAttribute("width"));
+          const h = parseFloat(logoImg.getAttribute("height"));
+          logoImg.remove();
+          if (logoHref && logoHref.startsWith("data:image/svg+xml")) {
+            const pngUrl = await svgDataUrlToPngDataUrl(logoHref, 800);
+            darkLogoInfo = { pngUrl, x, y, w, h };
+          }
+        }
+      }
+
       const doc = new jsPDF({
         orientation: "landscape",
         unit: "mm",
         format: [PAGE_W, PAGE_H],
       });
 
-      // White background covering full page (extends into bleed)
-      doc.setFillColor(255, 255, 255);
-      doc.rect(0, 0, PAGE_W, PAGE_H, "F");
+      if (card.dark) {
+        // Dark variant: fill bleed with base color, then place the shared
+        // background image (same one used for CSS preview) in the trim area
+        doc.setFillColor(13, 10, 31); // DARK_BASE #0d0a1f
+        doc.rect(0, 0, PAGE_W, PAGE_H, "F");
+        const darkBg = generateDarkBackground();
+        doc.addImage(darkBg, "PNG", BLEED, BLEED, TRIM_W, TRIM_H);
+      } else {
+        // White background covering full page (extends into bleed)
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, 0, PAGE_W, PAGE_H, "F");
+      }
 
       const qrX = BLEED + QR_X_IN_TRIM;
       const qrY = BLEED + QR_Y_IN_TRIM;
@@ -275,30 +419,43 @@
         height: QR_SIZE,
       });
 
+      // For dark cards, add the logo as a separate PNG image with transparency
+      if (darkLogoInfo) {
+        const { pngUrl, x, y, w, h } = darkLogoInfo;
+        // Convert SVG viewBox coords (0–400) to mm within the QR area
+        const scale = QR_SIZE / 400;
+        doc.addImage(pngUrl, "PNG",
+          qrX + x * scale, qrY + y * scale,
+          w * scale, h * scale);
+      }
+
       // Embed Fredoka font to match the on-screen preview
       const fontData = await loadFredokaFont();
       doc.addFileToVFS("Fredoka-Regular.ttf", fontData);
       doc.addFont("Fredoka-Regular.ttf", "Fredoka", "normal");
       doc.setFont("Fredoka", "normal");
       doc.setFontSize(4.5);
-      doc.setTextColor(153, 153, 153);
+
+      if (card.dark) {
+        doc.setTextColor(180, 180, 210);
+      } else {
+        doc.setTextColor(153, 153, 153);
+      }
       doc.text(card.url, BLEED + TEXT_X_IN_TRIM, BLEED + TEXT_Y_IN_TRIM);
 
       doc.save(`${cardName}-business-card.pdf`);
     }
 
     // Button click handlers
-    document.getElementById("btn-chessreel").addEventListener("click", async function () {
-      this.disabled = true;
-      this.textContent = "Generating…";
-      try { await generatePrintPDF("chessreel"); }
-      finally { this.disabled = false; this.textContent = "Download Print PDF"; }
-    });
-    document.getElementById("btn-chessparty").addEventListener("click", async function () {
-      this.disabled = true;
-      this.textContent = "Generating…";
-      try { await generatePrintPDF("chessparty"); }
-      finally { this.disabled = false; this.textContent = "Download Print PDF"; }
+    cards.forEach(({ name, dark }) => {
+      const btn = document.getElementById(`btn-${name}`);
+      const label = dark ? "Download Dark PDF" : "Download Print PDF";
+      btn.addEventListener("click", async function () {
+        this.disabled = true;
+        this.textContent = "Generating…";
+        try { await generatePrintPDF(name); }
+        finally { this.disabled = false; this.textContent = label; }
+      });
     });
   </script>
 </body>
