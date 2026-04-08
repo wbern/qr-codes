@@ -4,59 +4,145 @@
   <title>Business Cards</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, sans-serif; background: #f0f0f0; padding: 2rem; }
+    body { font-family: -apple-system, sans-serif; background: #f0f0f0; padding: 2rem; color: #333; }
     h1 { text-align: center; margin-bottom: 2rem; font-weight: 300; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 1200px; margin: 0 auto; }
-    .card { text-align: center; }
-    .card img { width: 100%; max-width: 500px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-    .card p { margin-top: 0.5rem; color: #666; font-size: 0.85rem; }
-    .card a { color: #555; text-decoration: none; border: 1px solid #ccc; padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; margin-left: 0.5rem; }
-    .card a:hover { background: #333; color: #fff; }
+
+    .brand { max-width: 1100px; margin: 0 auto 2.5rem; }
+    .brand h2 { font-size: 1rem; font-weight: 500; margin-bottom: 0.75rem; border-bottom: 1px solid #ddd; padding-bottom: 0.4rem; }
+
+    .card-row { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 1.5rem; }
+    .card-cell { flex: 1; text-align: center; }
+    .card-cell img { width: 100%; max-width: 480px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .card-cell .links { margin-top: 0.4rem; font-size: 0.8rem; color: #666; }
+    .card-cell .links a {
+      color: #555; text-decoration: none; border: 1px solid #ccc;
+      padding: 0.2rem 0.6rem; border-radius: 4px; margin-left: 0.3rem;
+    }
+    .card-cell .links a:hover { background: #333; color: #fff; }
+
+    .palette {
+      flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px;
+      padding: 0.5rem 0.75rem; background: #fff; border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08); min-width: 170px;
+    }
+    .palette-title { font-size: 0.65rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+    .pal-row { display: flex; align-items: center; gap: 6px; }
+    .pal-swatch { display: flex; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); }
+    .pal-half { width: 18px; height: 18px; }
+    .pal-label { font-size: 0.6rem; color: #888; flex: 1; }
+    .pal-hex { font-size: 0.55rem; font-family: monospace; color: #aaa; }
+    .pal-de { font-size: 0.5rem; font-weight: 600; min-width: 28px; text-align: right; }
+    .pal-de.safe { color: #2a2; } .pal-de.warn { color: #c80; } .pal-de.bad { color: #c22; }
   </style>
 </head>
 <body>
   <h1>Business Cards</h1>
-  <div class="grid">
-    <div class="card">
-      <img src="go-cards/output/chessreel.png">
-      <p>chessreel <a href="go-cards/output/chessreel.pdf">PDF</a></p>
-    </div>
-    <div class="card">
-      <img src="go-cards/output/chessreel-dark.png">
-      <p>chessreel-dark <a href="go-cards/output/chessreel-dark.pdf">PDF</a></p>
-    </div>
-    <div class="card">
-      <img src="go-cards/output/chessparty.png">
-      <p>chessparty <a href="go-cards/output/chessparty.pdf">PDF</a></p>
-    </div>
-    <div class="card">
-      <img src="go-cards/output/chessparty-dark.png">
-      <p>chessparty-dark <a href="go-cards/output/chessparty-dark.pdf">PDF</a></p>
-    </div>
-    <div class="card">
-      <img src="go-cards/output/bernting.png">
-      <p>bernting <a href="go-cards/output/bernting.pdf">PDF</a></p>
-    </div>
-    <div class="card">
-      <img src="go-cards/output/bernting-dark.png">
-      <p>bernting-dark <a href="go-cards/output/bernting-dark.pdf">PDF</a></p>
-    </div>
-    <div class="card">
-      <img src="go-cards/output/kendev.png">
-      <p>kendev <a href="go-cards/output/kendev.pdf">PDF</a></p>
-    </div>
-    <div class="card">
-      <img src="go-cards/output/kendev-dark.png">
-      <p>kendev-dark <a href="go-cards/output/kendev-dark.pdf">PDF</a></p>
-    </div>
-    <div class="card">
-      <img src="go-cards/output/henrik.png">
-      <p>henrik <a href="go-cards/output/henrik.pdf">PDF</a></p>
-    </div>
-    <div class="card">
-      <img src="go-cards/output/henrik-dark.png">
-      <p>henrik-dark <a href="go-cards/output/henrik-dark.pdf">PDF</a></p>
-    </div>
-  </div>
+  <div id="app"></div>
+
+<script>
+function rgbToCmyk(r,g,b) {
+  const r1=r/255, g1=g/255, b1=b/255, k=1-Math.max(r1,g1,b1);
+  if (k===1) return [0,0,0,100];
+  return [Math.round((1-r1-k)/(1-k)*100), Math.round((1-g1-k)/(1-k)*100), Math.round((1-b1-k)/(1-k)*100), Math.round(k*100)];
+}
+function cmykToRgb(c,m,y,k) { c/=100;m/=100;y/=100;k/=100; return [Math.round(255*(1-c)*(1-k)),Math.round(255*(1-m)*(1-k)),Math.round(255*(1-y)*(1-k))]; }
+function srgbLin(v){v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)}
+function rgbToXyz(r,g,b){const rl=srgbLin(r),gl=srgbLin(g),bl=srgbLin(b);return[.4124564*rl+.3575761*gl+.1804375*bl,.2126729*rl+.7151522*gl+.072175*bl,.0193339*rl+.119192*gl+.9503041*bl]}
+function xyzToLab(x,y,z){const f=v=>v>.008856?Math.cbrt(v):7.787*v+16/116;return[116*f(y/1)-16,500*(f(x/.95047)-f(y/1)),200*(f(y/1)-f(z/1.08883))]}
+function deltaE(r1,g1,b1,r2,g2,b2){const a=xyzToLab(...rgbToXyz(r1,g1,b1)),b=xyzToLab(...rgbToXyz(r2,g2,b2));return Math.sqrt(a.reduce((s,v,i)=>s+(v-b[i])**2,0))}
+function hexToRgb(h){h=h.replace('#','');return[parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)]}
+function rgbToHex(r,g,b){return'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('')}
+
+const brands = [
+  {
+    name: 'ChessReel', cards: ['chessreel', 'chessreel-dark'],
+    colors: [
+      { role: 'QR fg', hex: '#000000' }, { role: 'QR bg', hex: '#ffffff' },
+      { role: 'URL text', hex: '#999999' }, { role: 'Dark base', hex: '#120e2a' },
+      { role: 'Dark checker', hex: '#1e193a' }, { role: 'Dark URL', hex: '#b4b4d2' },
+    ]
+  },
+  {
+    name: 'ChessParty', cards: ['chessparty', 'chessparty-dark'],
+    colors: []
+  },
+  {
+    name: 'Bernting', cards: ['bernting', 'bernting-dark'],
+    colors: [
+      { role: 'Name', hex: '#13131a' }, { role: 'Title', hex: '#9b4dca' },
+      { role: 'Contact', hex: '#55556a' }, { role: 'Dark bg', hex: '#0a0a0f' },
+      { role: 'Dark name', hex: '#e8e8f0' }, { role: 'Dark contact', hex: '#8888a0' },
+      { role: 'Accent', hex: '#9b4dca' },
+    ]
+  },
+  {
+    name: 'KenDev', cards: ['kendev', 'kendev-dark'],
+    colors: [
+      { role: 'Name', hex: '#000000' }, { role: 'Title', hex: '#883aea' },
+      { role: 'Contact', hex: '#555555' }, { role: 'Dark bg', hex: '#000000' },
+      { role: 'Dark name', hex: '#ffffff' }, { role: 'Dark contact', hex: '#aaaaaa' },
+      { role: 'Accent', hex: '#883aea' },
+    ]
+  },
+  {
+    name: 'Henrik', cards: ['henrik', 'henrik-dark'],
+    colors: [
+      { role: 'Name', hex: '#1a0a2e' }, { role: 'Title', hex: '#6622bb' },
+      { role: 'Contact', hex: '#555566' }, { role: 'Dark bg', hex: '#1a0a2e' },
+      { role: 'Dark name', hex: '#ffffff' }, { role: 'Dark title', hex: '#9977ee' },
+      { role: 'Dark accent', hex: '#6622bb' }, { role: 'Dark contact', hex: '#bbccee' },
+    ]
+  }
+];
+
+const app = document.getElementById('app');
+brands.forEach(brand => {
+  const section = document.createElement('div');
+  section.className = 'brand';
+  section.innerHTML = `<h2>${brand.name}</h2>`;
+
+  const row = document.createElement('div');
+  row.className = 'card-row';
+
+  brand.cards.forEach(name => {
+    row.innerHTML += `<div class="card-cell">
+      <img src="go-cards/output/${name}.png">
+      <div class="links">${name} <a href="go-cards/output/${name}.pdf">PDF</a></div>
+    </div>`;
+  });
+
+  if (brand.colors.length > 0) {
+    const pal = document.createElement('div');
+    pal.className = 'palette';
+    pal.innerHTML = '<div class="palette-title">RGB → CMYK</div>';
+
+    brand.colors.forEach(col => {
+      const [r,g,b] = hexToRgb(col.hex);
+      const cmyk = rgbToCmyk(r,g,b);
+      const [r2,g2,b2] = cmykToRgb(...cmyk);
+      const cmykHex = rgbToHex(r2,g2,b2);
+      const de = deltaE(r,g,b,r2,g2,b2);
+      const cls = de < 3 ? 'safe' : de < 10 ? 'warn' : 'bad';
+
+      const pr = document.createElement('div');
+      pr.className = 'pal-row';
+      pr.innerHTML = `
+        <div class="pal-swatch">
+          <div class="pal-half" style="background:${col.hex}"></div>
+          <div class="pal-half" style="background:${cmykHex}"></div>
+        </div>
+        <div class="pal-label">${col.role}</div>
+        <div class="pal-hex">${col.hex}</div>
+        <div class="pal-de ${cls}">${de > 0.5 ? de.toFixed(1) : ''}</div>
+      `;
+      pal.appendChild(pr);
+    });
+    row.appendChild(pal);
+  }
+
+  section.appendChild(row);
+  app.appendChild(section);
+});
+</script>
 </body>
 </html>
