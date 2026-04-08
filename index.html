@@ -5,7 +5,8 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, sans-serif; background: #f0f0f0; padding: 2rem; color: #333; }
-    h1 { text-align: center; margin-bottom: 2rem; font-weight: 300; }
+    h1 { text-align: center; margin-bottom: 0.3rem; font-weight: 300; }
+    .note { text-align: center; color: #999; font-size: 0.8rem; margin-bottom: 2rem; }
 
     .brand { max-width: 1100px; margin: 0 auto 2.5rem; }
     .brand h2 { font-size: 1rem; font-weight: 500; margin-bottom: 0.75rem; border-bottom: 1px solid #ddd; padding-bottom: 0.4rem; }
@@ -37,6 +38,7 @@
 </head>
 <body>
   <h1>Business Cards</h1>
+  <p class="note">All cards are single-sided (front only), 90 × 55 mm with 3 mm bleed.</p>
   <div id="app"></div>
 
 <script>
@@ -64,7 +66,11 @@ const brands = [
   },
   {
     name: 'ChessParty', cards: ['chessparty', 'chessparty-dark'],
-    colors: []
+    colors: [
+      { role: 'QR fg', hex: '#000000' }, { role: 'QR bg', hex: '#ffffff' },
+      { role: 'URL text', hex: '#999999' }, { role: 'Dark base', hex: '#120e2a' },
+      { role: 'Dark checker', hex: '#1e193a' }, { role: 'Dark URL', hex: '#b4b4d2' },
+    ]
   },
   {
     name: 'Bernting', cards: ['bernting', 'bernting-dark'],

@@ -557,20 +557,31 @@ func drawDarkBackground(dc *gg.Context) {
 	dc.Fill()
 }
 
-// generatePDF wraps the card PNG into a print-ready PDF.
-// The PDF is just a carrier for the exact same pixels — no separate text rendering.
+// Crop mark layout: marks sit outside the bleed area.
+const (
+	markLen    = 5.0 // length of each crop mark line (mm)
+	markOffset = 2.0 // gap between bleed edge and start of mark (mm)
+	markWeight = 0.25 // line width in mm (~0.7pt)
+	pdfMargin  = bleed + markOffset + markLen // total margin around trim
+)
+
+// generatePDF wraps the card PNG into a print-ready PDF with European crop marks.
 func generatePDF(card cardConfig, pngPath, pdfPath string) {
+	sheetW := trimW + 2*pdfMargin
+	sheetH := trimH + 2*pdfMargin
+
 	pdf := fpdf.NewCustom(&fpdf.InitType{
 		UnitStr: "mm",
-		Size:    fpdf.SizeType{Wd: pageW, Ht: pageH},
+		Size:    fpdf.SizeType{Wd: sheetW, Ht: sheetH},
 	})
 	pdf.SetMargins(0, 0, 0)
 	pdf.SetAutoPageBreak(false, 0)
 	pdf.AddPage()
 
-	// Fill entire page with bleed color.
+	// Fill bleed area with background color.
+	bleedX := pdfMargin - bleed
+	bleedY := pdfMargin - bleed
 	if card.Dark && card.Style != nil {
-		// Use the personal card's background color for bleed.
 		r, g, b, _ := card.Style.BgColor.RGBA()
 		pdf.SetFillColor(int(r>>8), int(g>>8), int(b>>8))
 	} else if card.Dark {
@@ -578,14 +589,53 @@ func generatePDF(card cardConfig, pngPath, pdfPath string) {
 	} else {
 		pdf.SetFillColor(255, 255, 255)
 	}
-	pdf.Rect(0, 0, pageW, pageH, "F")
+	pdf.Rect(bleedX, bleedY, trimW+2*bleed, trimH+2*bleed, "F")
 
-	// Place card PNG at bleed offset, covering the trim area.
+	// Place card PNG covering the trim area.
 	opts := fpdf.ImageOptions{ImageType: "PNG", ReadDpi: false}
-	pdf.ImageOptions(pngPath, bleed, bleed, trimW, trimH, false, opts, 0, "")
+	pdf.ImageOptions(pngPath, pdfMargin, pdfMargin, trimW, trimH, false, opts, 0, "")
+
+	// Draw crop marks at the four corners of the trim area.
+	drawCropMarks(pdf, pdfMargin, pdfMargin, trimW, trimH)
 
 	if err := pdf.OutputFileAndClose(pdfPath); err != nil {
 		panic(fmt.Errorf("save pdf: %w", err))
+	}
+}
+
+// drawCropMarks draws standard European crop marks (thin lines at each corner).
+func drawCropMarks(pdf *fpdf.Fpdf, trimX, trimY, trimW, trimH float64) {
+	pdf.SetDrawColor(0, 0, 0) // registration black
+	pdf.SetLineWidth(markWeight)
+
+	// Corner positions: top-left, top-right, bottom-left, bottom-right.
+	corners := [][2]float64{
+		{trimX, trimY},
+		{trimX + trimW, trimY},
+		{trimX, trimY + trimH},
+		{trimX + trimW, trimY + trimH},
+	}
+
+	for _, c := range corners {
+		cx, cy := c[0], c[1]
+
+		// Horizontal marks
+		if cx == trimX {
+			// Left edge: mark extends to the left
+			pdf.Line(cx-markOffset-markLen, cy, cx-markOffset, cy)
+		} else {
+			// Right edge: mark extends to the right
+			pdf.Line(cx+markOffset, cy, cx+markOffset+markLen, cy)
+		}
+
+		// Vertical marks
+		if cy == trimY {
+			// Top edge: mark extends upward
+			pdf.Line(cx, cy-markOffset-markLen, cx, cy-markOffset)
+		} else {
+			// Bottom edge: mark extends downward
+			pdf.Line(cx, cy+markOffset, cx, cy+markOffset+markLen)
+		}
 	}
 }
 
